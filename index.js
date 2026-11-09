@@ -8,6 +8,7 @@ const cors = require('cors');
 const { Server } = require('socket.io');
 
 const app = express();
+app.use(express.static(__dirname));
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] } });
 app.use(cors());
@@ -1412,6 +1413,10 @@ app.get('*', (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.send(INDEX_HTML);
+});
+// Dòng này giúp Express gửi file index.html khi người dùng truy cập link trang chủ
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
 });
 server.listen(PORT, '0.0.0.0', () => {
   console.log('🚀 AI Progress Tracker Server running on port ' + PORT);
