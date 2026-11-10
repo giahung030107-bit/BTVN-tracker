@@ -1522,6 +1522,36 @@ app.post('/api/reminders/send', (req, res) => {
 });
 
 /**
+ * API Xóa vĩnh viễn 1 bài tập (Chỉ xóa khi Giáo viên chủ động bấm nút Xóa)
+ */
+app.delete('/api/assignments/:id', (req, res) => {
+  try {
+    const assignmentId = req.params.id;
+    const db = getDb(); // Hàm đọc db hiện có trong server của bạn
+
+    if (Array.isArray(db.assignments)) {
+      db.assignments = db.assignments.filter(
+        (a) => String(a.id) !== String(assignmentId)
+      );
+    }
+    if (Array.isArray(db.submissions)) {
+      db.submissions = db.submissions.filter(
+        (s) => String(s.assignment_id) !== String(assignmentId)
+      );
+    }
+
+    saveDb(db); // Ghi xuống runtime_db.json
+    io.emit('assignment_deleted', { id: assignmentId });
+    io.emit('db_updated', db);
+
+    return res.json({ success: true, id: assignmentId });
+  } catch (error) {
+    console.error('Lỗi khi xóa bài tập:', error);
+    return res.status(500).json({ error: 'Không thể xóa bài tập' });
+  }
+});
+
+/**
  * 14. API Xóa TOÀN BỘ dữ liệu (chỉ khi người dùng bấm nút và xác nhận 2 lần).
  * Không truyền forceWipeAll === true + confirm_text === 'XOA HET' thì KHÔNG xóa gì cả.
  */
